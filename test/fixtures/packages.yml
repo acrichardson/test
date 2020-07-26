@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  package: MyString
+  status: MyString
+  priority: MyString
+  section: MyString
+  installed_size: MyString
+  maintainer: MyString
+  architecture: MyString
+  homepage: MyString
+  dependencies: MyString
+
+two:
+  package: MyString
+  status: MyString
+  priority: MyString
+  section: MyString
+  installed_size: MyString
+  maintainer: MyString
+  architecture: MyString
+  homepage: MyString
+  dependencies: MyString
