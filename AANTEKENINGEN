@@ -1,3 +1,44 @@
+AANTEKENINGEN
+
+#Migration
+class ChangeRevToArray < ActiveRecord::Migration[6.0]
+  def change
+    add_column :packages, :reverse_depends, :text, default: []
+  end
+end
+# :text, default: [], array:true
+
+
+
+
+
+
+#rev depends NOW HALF
+
+Package.all.each do |test_pack|
+        rev_string = ""
+          # test_pack = test_pack
+            Package.all.each do |package|
+          if package.depends != nil
+            # byebug
+            if package.depends.include?(test_pack.name)
+
+              concat_string = "#{rev_string}" + "#{package.link}"
+              test_pack.rev_depends = concat_string
+              test_pack.save
+              # byebug
+            end
+          end
+        end
+
+
+
+
+
+
+
+#Package controller almost
+
 require 'open-uri'
 require 'json'
 require 'csv'
@@ -8,55 +49,21 @@ module Api
   module V1
     class PackagesController < ApplicationController
       def index
-        # byebug
+        @packages = Package.all
         # @id = @packages.last.id + 1
         # @packages = []
         # @id = 1
         # @packages = []
         parse
-        # @packages = Package.all
-        # set_link
-        # set_rev
+        set_link
 
-        Package.all.each do |package|
-          package.link = "http://localhost:3000/#{api_v1_package_path(package.id)}"
-          package.save
-        end
-
-        Package.all.each do |test_pack|
-        rev_string = ""
-        rev_array = []
-        # rev_hash = {}
-          # test_pack = test_pack
-            Package.all.each do |package|
-          if package.depends != nil
-            # byebug
-            if package.depends.include?(test_pack.name)
-              # rev_hash[package.name] = package.link
-              # test_pack.rev_depends = rev_hash
-              if rev_string == ""
-              rev_string = "#{package.link}"
-              test_pack.rev_depends = rev_string
-              test_pack.save
-              else
-                rev_array << rev_string
-                rev_array << "#{package.link}"
-                test_pack.rev_depends = rev_array
-                test_pack.save
-              # byebug
-              end
-            end
-          end
-        end
-              # byebug
-      end
-
+        set_rev
         # @packages.each do |packages|
 
         json = render json: {
           status: 'SUCCES',
           message: 'Loaded packages',
-          data:Package.all},
+          data:@packages},
           status: :ok
         end
 
@@ -97,6 +104,11 @@ module Api
         # @id += 1
       end
 
+      def set_link
+        @packages.each do |package|
+          package.link = "http://localhost:3000/#{api_v1_package_path(package.id)}"
+        end
+      end
         # puts thing.inspect
         # byebug
 
@@ -104,31 +116,23 @@ module Api
         # repository = Repository.new(file)
       end
 
-
-      def set_link
-        @packages.each do |package|
-          package.link = "http://localhost:3000/#{api_v1_package_path(package.id)}"
-        end
-      end
-
       def set_rev
-        Package.all.each do |test_pack|
         rev_array = []
-          @test_pack = test_pack
-            Package.all.each do |package|
-          if package.depends != nil
+        Package.all.each do |test_pack|
+          Package.all.each do |package|
+            if package.depends != nil
             # byebug
             if package.depends.include?(test_pack.name)
-              rev_array << package.name
-              test_pack.rev_depends = rev_array
               # byebug
+              rev_array << package.name
             end
+              test_pack.rev_depends = rev_array
+              test_pack.save
+          end
+            # byebug
           end
         end
-              @test_pack.save
-              # byebug
       end
-    end
 
       ##NOT NESSECARY
       # def create

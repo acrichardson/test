@@ -1,3 +1,6 @@
+Package_controller working, only link in rev not clickable
+
+
 require 'open-uri'
 require 'json'
 require 'csv'
@@ -24,32 +27,26 @@ module Api
         end
 
         Package.all.each do |test_pack|
-        rev_string = ""
         rev_array = []
-        # rev_hash = {}
           # test_pack = test_pack
             Package.all.each do |package|
           if package.depends != nil
             # byebug
             if package.depends.include?(test_pack.name)
-              # rev_hash[package.name] = package.link
-              # test_pack.rev_depends = rev_hash
-              if rev_string == ""
-              rev_string = "#{package.link}"
-              test_pack.rev_depends = rev_string
+              rev_array << package.link
+              test_pack.rev_depends = rev_array
               test_pack.save
-              else
-                rev_array << rev_string
-                rev_array << "#{package.link}"
-                test_pack.rev_depends = rev_array
-                test_pack.save
               # byebug
-              end
             end
           end
         end
               # byebug
       end
+
+
+
+
+
 
         # @packages.each do |packages|
 
