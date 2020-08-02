@@ -13,16 +13,4 @@
 #     name: Faker::Movies::StarWars.specie,
 #     description: Faker::Movies::StarWars.quote
 #   })
-
-# end
-
-# string[0] " "
-
-
-
-# @packages = []
-# thing = YAML.load_file('status')
-# thing.each do
-# @packages <<  Package.new(id: @id, name: thing["Package"], description: thing["Description"], depends: thing["Depends"])
-# # @id += 1
 # end

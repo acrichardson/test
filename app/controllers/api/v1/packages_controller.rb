@@ -1,57 +1,16 @@
-require 'open-uri'
 require 'json'
-require 'csv'
 require 'yaml'
-# require 'pry-byebug'
 
 module Api
   module V1
     class PackagesController < ApplicationController
       def index
-        # byebug
-        # @id = @packages.last.id + 1
-        # @packages = []
-        # @id = 1
-        # @packages = []
-        parse
-        # @packages = Package.all
-        # set_link
-        # set_rev
-
-        Package.all.each do |package|
-          package.link = "http://localhost:3000/#{api_v1_package_path(package.id)}"
-          package.save
+        @packages = Package.all
+        if @packages.all == []
+          parse
+          set_link
+          set_rev
         end
-
-        Package.all.each do |test_pack|
-        rev_string = ""
-        rev_array = []
-        # rev_hash = {}
-          # test_pack = test_pack
-            Package.all.each do |package|
-          if package.depends != nil
-            # byebug
-            if package.depends.include?(test_pack.name)
-              # rev_hash[package.name] = package.link
-              # test_pack.rev_depends = rev_hash
-              if rev_string == ""
-              rev_string = "#{package.link}"
-              test_pack.rev_depends = rev_string
-              test_pack.save
-              else
-                rev_array << rev_string
-                rev_array << "#{package.link}"
-                test_pack.rev_depends = rev_array
-                test_pack.save
-              # byebug
-              end
-            end
-          end
-        end
-              # byebug
-      end
-
-        # @packages.each do |packages|
 
         json = render json: {
           status: 'SUCCES',
@@ -62,73 +21,64 @@ module Api
 
         def show
           package = Package.find(params[:id])
-        # byebug
-        # package = @packages.find(params[:id])
-        render json: {status: 'SUCCES', message: 'Loaded package', data:package}, status: :ok
-      end
-
-      def parse
-        # # @packages = []
-        # f = File.open('status')
-        Package.destroy_all
-
-        r = File.read('status')
-        s = r.split("\n\n")
-
-        # thing = YAML.load_file('status')
-        # byebug
-        # split = thing.split("\n\n")
-       # things = JSON.parse(File.read('status'))
-        # thing = JSON.parse(packages)
-
-        # filepath = 'status'
-        # string_packages = File.read(filepath)
-
-        # splitted = string_packages.split("\n\n")
-
-        # byebug
-
-        s.each do |string|
-          # byebug
-          hash = YAML.load(string)
-          @package = Package.new(name: hash["Package"], description: hash["Description"], depends: hash["Depends"])
-          @package.save
-        # @packages <<  @package
-        # @id += 1
-      end
-
-        # puts thing.inspect
-        # byebug
-
-        # byebug
-        # repository = Repository.new(file)
-      end
-
-
-      def set_link
-        @packages.each do |package|
-          package.link = "http://localhost:3000/#{api_v1_package_path(package.id)}"
+          render json: {status: 'SUCCES', message: 'Loaded package', data:package}, status: :ok
         end
-      end
 
-      def set_rev
-        Package.all.each do |test_pack|
-        rev_array = []
-          @test_pack = test_pack
+        # There must be a better way
+        def parse
+          Package.destroy_all
+          # r = File.read('status_no2')
+          r = File.read('var/lib/dpkg/status')
+          split = r.split("\n\n")
+          split = split.each { |string| string.gsub!(":\n  ", " ") }
+          split = split.each { |string| string.gsub!(":\n .", " ") }
+          split = split.each { |string| string.gsub!("o: ", "o") }
+          split = split.each { |string| string.gsub!("like: ", "like") }
+          split = split.each { |string| string.gsub!("cense:", "cense ") }
+          split = split.each { |string| string.gsub!("lets: ", "lets ") }
+          split = split.each { |string| string.gsub!(" as:", " as") }
+          split = split.each { |string| string.gsub!(":\n <", "\n <") }
+          split = split.each { |string| string.gsub!("short: ", "short ") }
+          split = split.each { |string| string.gsub!(":\n ", ": ") }
+          split = split.each { |string| string.gsub!("includes:", "includes") }
+          split = split.each { |string| string.gsub!("include:", "include") }
+          split = split.each { |string| string.gsub!(":\n *", " ") }
+          split = split.each { |string| string.gsub!(":\n", "\n") }
+
+          split.each do |string|
+            hash = YAML.load(string)
+            @package = Package.new(name: hash["Package"], description: hash["Description"], depends: hash["Depends"])
+            @package.save
+          end
+        end
+
+        def set_link
+          root = "http://localhost:3000/"
+          @packages.each do |package|
+            package.link = "#{root}#{api_v1_package_path(package.id)}"
+            package.save
+          end
+        end
+
+        def set_rev
+          Package.all.each do |test_pack|
+            rev_string = ''
+            rev_array = []
             Package.all.each do |package|
-          if package.depends != nil
-            # byebug
-            if package.depends.include?(test_pack.name)
-              rev_array << package.name
-              test_pack.rev_depends = rev_array
-              # byebug
+              if package.depends != nil
+                if package.depends.include?(test_pack.name)
+                  rev_array << { package.name => package.link }.to_s
+                  test_pack.rev_depends = rev_array
+                  test_pack.save
+                end
+              end
             end
           end
         end
-              @test_pack.save
-              # byebug
-      end
+
     end
+  end
+end
 
       ##NOT NESSECARY
       # def create
@@ -142,7 +92,7 @@ module Api
 
       # def destroy
       #   package = Package.find(params[:id])
-      #   article.destroy
+      #   package.destroy
       #   render json: {status: 'SUCCES', message: 'Deleted package', data:package}, status: :ok
       # end
 
@@ -152,12 +102,7 @@ module Api
       #     render json: {status: 'SUCCES', message: 'Updated package', data:package}, status: :ok
       #   else
       #     ender json: {status: 'ERROR', message: 'Deleted package', data:package}, status: :unprocessable_entitiy
-      # end
-      private
-
-      def package_params
-        params.permit(:name, :description, :depends, :rev_depends)
-      end
-    end
-  end
-end
+    # end
+      # def package_params
+      #   params.permit(:name, :description, :depends, :rev_depends)
+    # end

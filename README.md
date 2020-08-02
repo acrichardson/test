@@ -1,26 +1,12 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Hi!
+database
+  rails db:migrate
+local server:
+  rails s
+  => http://localhost:3000/api/v1/packages
 
-Things you may want to cover:
+As you will see the parsing part gave some struggles, you probably have a cleaner way of covering that part.
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
+Thanks!
